@@ -1,0 +1,25 @@
+Telco Classification Project
+The goal of this project is to complete and end to end project working through the data science pipeline. The telco company has a high churn rate and needs to know why customers are churning. Use machine learning to create a predict CSV file to predict customer's who churn. 
+
+Data Dictionary
+Customer Identification and Demographic Data:
+Customer ID 
+Gender 
+Partner status 
+Dependent status 
+Senior citizen status 
+Tenure in months 
+Monthly charges 
+Total charges 
+Paperless Billing 
+Payment type 
+Multiple lines : One Line, Multiple Lines, No Phone Service 
+Internet Service Type: Fiber Optic, DSL, None 
+Internet Service Option columns 
+Online security
+Online backup
+Device protection
+Tech support
+Streaming TV
+Streaming movies
+Churn status 
