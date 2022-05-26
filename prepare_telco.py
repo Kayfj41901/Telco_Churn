@@ -3,45 +3,64 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
+# import splitting and imputing functions
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
 
+# turn off pink boxes for demo
 import warnings
 warnings.filterwarnings("ignore")
 
+def split_telco_data(df):
+    '''
+    This function performs split on telco data, stratify churn.
+    Returns train, validate, and test dfs.
+    '''
+    train_validate, test = train_test_split(df, test_size=.2, 
+                                        random_state=123, 
+                                        stratify=df.churn)
+    train, validate = train_test_split(train_validate, test_size=.3, 
+                                   random_state=123, 
+                                   stratify=train_validate.churn)
+    return train, validate, test
 
 def prep_telco_data(df):
-    df = df.drop(columns=['payment_type', 'customer_id', 'contract_type', 'internet_service_type']) 
+    # Drop duplicate columns
+    df.drop(columns=['payment_type_id', 'internet_service_type_id', 'contract_type_id'], inplace=True)
+       
+    # Drop null values stored as whitespace    
     df['total_charges'] = df['total_charges'].str.strip()
     df = df[df.total_charges != '']
+    
+    # Convert to correct datatype
     df['total_charges'] = df.total_charges.astype(float)
     
     # Convert binary categorical variables to numeric
-    ordinal_label = {k: i for i, k in enumerate(df['gender'].unique(), 0)}
-    df['gender'] = df['gender'].map(ordinal_label)
-    ordinal_label2 = {k: i for i, k in enumerate(df['partner'].unique(), 0)}
-    df['partner'] = df['partner'].map(ordinal_label2)
-    ordinal_label3 = {k: i for i, k in enumerate(df['dependents'].unique(), 0)}
-    df['dependents'] = df['dependents'].map(ordinal_label3)
-    ordinal_label4 = {k: i for i, k in enumerate(df['phone_service'].unique(), 0)}
-    df['phone_service'] = df['phone_service'].map(ordinal_label4)
-    ordinal_label5 = {k: i for i, k in enumerate(df['multiple_lines'].unique(), 0)}
-    df['multiple_lines'] = df['multiple_lines'].map(ordinal_label5)
-    ordinal_label6 = {k: i for i, k in enumerate(df['online_security'].unique(), 0)}
-    df['online_security'] = df['online_security'].map(ordinal_label6)
-    ordinal_label7 = {k: i for i, k in enumerate(df['online_backup'].unique(), 0)}
-    df['online_backup'] = df['online_backup'].map(ordinal_label7)
-    ordinal_label8 = {k: i for i, k in enumerate(df['device_protection'].unique(), 0)}
-    df['device_protection'] = df['device_protection'].map(ordinal_label8)
-    ordinal_label9 = {k: i for i, k in enumerate(df['tech_support'].unique(), 0)}
-    df['tech_support'] = df['tech_support'].map(ordinal_label9)
-    ordinal_label10 = {k: i for i, k in enumerate(df['streaming_tv'].unique(), 0)}
-    df['streaming_tv'] = df['streaming_tv'].map(ordinal_label10)
-    ordinal_label11 = {k: i for i, k in enumerate(df['streaming_movies'].unique(), 0)}
-    df['streaming_movies'] = df['streaming_movies'].map(ordinal_label11)
-    ordinal_label12 = {k: i for i, k in enumerate(df['paperless_billing'].unique(), 0)}
-    df['paperless_billing'] = df['paperless_billing'].map(ordinal_label12)
-    ordinal_label13 = {k: i for i, k in enumerate(df['churn'].unique(), 0)}
-    df['churn'] = df['churn'].map(ordinal_label13)
+    df['gender_encoded'] = df.gender.map({'Female': 1, 'Male': 0})
+    df['partner_encoded'] = df.partner.map({'Yes': 1, 'No': 0})
+    df['dependents_encoded'] = df.dependents.map({'Yes': 1, 'No': 0})
+    df['phone_service_encoded'] = df.phone_service.map({'Yes': 1, 'No': 0})
+    df['paperless_billing_encoded'] = df.paperless_billing.map({'Yes': 1, 'No': 0})
+    df['churn_encoded'] = df.churn.map({'Yes': 1, 'No': 0})
     
-    return df
+    # Get dummies for non-binary categorical variables
+    dummy_df = pd.get_dummies(df[['multiple_lines', \
+                              'online_security', \
+                              'online_backup', \
+                              'device_protection', \
+                              'tech_support', \
+                              'streaming_tv', \
+                              'streaming_movies', \
+                              'contract_type', \
+                              'internet_service_type', \
+                              'payment_type']], dummy_na=False, \
+                              drop_first=True)
+    
+    # Concatenate dummy dataframe to original 
+    df = pd.concat([df, dummy_df], axis=1)
+    
+    # split the data
+    train, validate, test = split_telco_data(df)
+    
+    return train, validate, test
+ 
